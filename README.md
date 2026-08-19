@@ -119,12 +119,6 @@ GPS dipakai untuk mengambil latitude/longitude pengguna, menghitung jarak ke res
 
 Alasannya: fitur utama NearBite adalah menemukan restoran terdekat, sehingga lokasi pengguna merupakan data inti pengalaman aplikasi.
 
-### Kamera/Galeri
-
-Kamera dan galeri dipakai owner untuk memilih foto restoran/menu melalui `image_picker`. Foto dapat ditampilkan pada profil dan item menu ketika URL gambar tersedia.
-
-Alasannya: foto membantu pengguna mengenali restoran dan menu, sementara `image_picker` memberi alur input yang sesuai perangkat mobile.
-
 ## Fitur Utama
 
 - Daftar restoran publik dari Supabase.
