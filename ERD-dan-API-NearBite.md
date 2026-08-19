@@ -51,38 +51,50 @@ erDiagram
 > Sesuaikan tipe/constraint dengan migration Supabase yang dipakai pada project. `seed_data.sql` hanya berisi data awal, bukan migration lengkap.
 
 ```sql
-create table public.users (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text unique not null,
-  full_name text not null,
-  created_at timestamptz not null default now()
+-- 1. Tabel profil pengguna
+create table if not exists public.users (
+id uuid primary key default gen_random_uuid(),
+email text not null unique,
+password_hash text, -- kosongkan bila memakai Supabase Auth
+full_name text not null,
+created_at timestamptz not null default now()
 );
 
-create table public.restaurants (
-  id uuid primary key default gen_random_uuid(),
-  owner_id uuid not null references public.users(id) on delete cascade,
-  name text not null,
-  description text not null default '',
-  address text not null default '',
-  latitude double precision not null,
-  longitude double precision not null,
-  photo_url text,
-  open_hours text not null default '',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+
+-- 2. Tabel resto
+create table if not exists public.restaurants (
+id uuid primary key default gen_random_uuid(),
+owner_id uuid not null references public.users(id) on delete cascade,
+name text not null check (char_length(name) >= 3),
+description text default '',
+address text default '',
+latitude double precision not null check (latitude between -90 and 90),
+longitude double precision not null check (longitude between -180 and 180),
+photo_url text,
+open_hours text,
+created_at timestamptz not null default now(),
+updated_at timestamptz not null default now()
 );
 
-create table public.menu_items (
-  id uuid primary key default gen_random_uuid(),
-  restaurant_id uuid not null references public.restaurants(id) on delete cascade,
-  name text not null,
-  description text not null default '',
-  price integer not null check (price >= 0),
-  photo_url text,
-  is_available boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+-- 3. Tabel menu
+create table if not exists public.menu_items (
+id uuid primary key default gen_random_uuid(),
+restaurant_id uuid not null references public.restaurants(id) on delete cascade,
+name text not null check (char_length(name) >= 1),
+description text default '',
+price integer not null check (price >= 0),
+photo_url text,
+is_available boolean not null default true,
+created_at timestamptz not null default now()
 );
+
+-- 4. Index untuk pencarian & join
+create index if not exists idx_menu_items_restaurant on public.menu_items(restaurant_id);
+create index if not exists idx_restaurants_owner on public.restaurants(owner_id);
+create index if not exists idx_restaurants_name on public.restaurants(lower(name));
+create index if not exists idx_menu_items_name on public.menu_items(lower(name));
+
+
 ```
 
 ## RLS Minimum
